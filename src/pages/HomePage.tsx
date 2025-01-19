@@ -156,7 +156,7 @@ const HomePage: React.FC = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Drawer anchor={"top"} open={preferencesOpen} onClose={()=>setPreferencesOpen(false)}>
+      <Drawer PaperProps={{sx:{borderRadius: "0px 0px 30px 30px"}}} anchor={"top"} open={preferencesOpen} onClose={()=>setPreferencesOpen(false)}>
         <PreferencesModal
           sources={availableSources}
           categories={availableCategories}
@@ -164,7 +164,7 @@ const HomePage: React.FC = () => {
           onSave={handleSavePreferences}
         />
       </Drawer>
-      <AppBar sx={{backgroundColor:"#0e272a94"}} position="static">
+      <AppBar sx={{backgroundColor:"#D9AFD9", backgroundImage: "linear-gradient(to right, #cdc6c6 0%, #9b9494 51%, #939393 72%)"}} position="static">
         <Toolbar sx={{ 
           flexDirection: { xs: 'column', sm:"column", md:"row" }, 
           padding: { xs: '8px 16px', sm:"0px 24px" },
@@ -211,7 +211,7 @@ const HomePage: React.FC = () => {
           </Drawer>
         </Toolbar>
       </AppBar>
-      <Stack flexDirection="row" flexWrap={"wrap"} sx={{background:"#e8e8e8", rowGap:"8px", columnGap:"8px", padding:"16px"}}>
+      <Stack flexDirection="row" flexWrap={"wrap"} sx={{borderTop:"1px solid #7c6b6b", background:"linear-gradient(to right, #cdc6c6 0%, #9b9494 51%, #939393 72%)", rowGap:"8px", columnGap:"8px", padding:"16px"}}>
         {
           isLoading ? 
           dummyItems.map((article,idx)=> <NewsCardSkeleton index={idx} />) :

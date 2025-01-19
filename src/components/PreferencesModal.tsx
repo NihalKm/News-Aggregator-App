@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
+import { Button, Checkbox, FormControlLabel, IconButton, Stack } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
+import '../App.css'
 
 interface PreferencesModalProps {
   sources: string[];
   categories: string[];
   authors: string[];
   onSave: (selectedSources: string[], selectedCategories: string[], selectedAuthors: string[]) => void;
+}
+
+const CheckBoxComponent: React.FC<{label:string, value:boolean, onChange:(e) => void}> = (props) => {
+  const { label, value, onChange,  } = props;
+  return (
+    <FormControlLabel key={label} label={label}
+      control={<Checkbox  onChange={e => onChange(e)}
+      checked={value} label={label} value={label} size="small" />} 
+    />
+  )
 }
 
 const PreferencesModal: React.FC<PreferencesModalProps> = ({ sources, categories, authors, onSave }) => {
@@ -16,85 +29,41 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ sources, categories
     onSave(selectedSources, selectedCategories, selectedAuthors);
   };
 
+  const handleChange = (event, currentList:string[], setFunction:(e)=>void, item:string ) => {
+    if (event.target.checked) {
+      setFunction([...currentList, item]);
+    } else {
+      setFunction(currentList.filter((s) => s !== item));
+    }
+  }
+
   return (
-    <div style={{ padding: '20px', border: '1px solid #ddd' }}>
+    <Stack style={{ padding: '20px', borderBottom: '4px solid #3d3b3b', borderRadius: "30px" }}>
       <h2>Customize Your Feed</h2>
-      
       {/* Sources */}
-      <h4>Sources</h4>
+      <h5>Sources</h5>
       {sources.map((source) => (
-        <div key={source}>
-          <input
-            type="checkbox"
-            value={source}
-            checked={selectedSources.includes(source)}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setSelectedSources([...selectedSources, source]);
-              } else {
-                setSelectedSources(selectedSources.filter((s) => s !== source));
-              }
-            }}
-          />
-          {source}
-        </div>
+        <CheckBoxComponent label={source} value={selectedSources.includes(source)} onChange={(e)=>handleChange(e, selectedSources, setSelectedSources, source)} />
       ))}
 
       {/* Categories */}
-      <h4>Categories</h4>
+      <h5>Categories</h5>
       {categories.map((category) => (
-        <div key={category}>
-          <input
-            type="checkbox"
-            value={category}
-            checked={selectedCategories.includes(category)}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setSelectedCategories([...selectedCategories, category]);
-              } else {
-                setSelectedCategories(selectedCategories.filter((c) => c !== category));
-              }
-            }}
-          />
-          {category}
-        </div>
+        <CheckBoxComponent label={category} value={selectedCategories.includes(category)} onChange={(e)=>handleChange(e, selectedCategories, setSelectedCategories, category)} />
       ))}
 
       {/* Authors */}
-      <h4>Authors</h4>
+      <h5>Authors</h5>
       {authors.map((author) => (
-        <div key={author}>
-          <input
-            type="checkbox"
-            value={author}
-            checked={selectedAuthors.includes(author)}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setSelectedAuthors([...selectedAuthors, author]);
-              } else {
-                setSelectedAuthors(selectedAuthors.filter((a) => a !== author));
-              }
-            }}
-          />
-          {author}
-        </div>
+        <CheckBoxComponent label={author} value={selectedAuthors.includes(author)} onChange={(e)=>handleChange(e, selectedAuthors, setSelectedAuthors, author)} />
       ))}
-
-      <button onClick={handleSave} style={{ marginTop: '20px', padding: '10px' }}>
-        Save Preferences
-      </button>
-    </div>
+      <Stack sx={{width:"100%", alignItems:"center"}}>
+        <Button variant="contained" style={{width:{xs:"100%", sm:"50%"}, background:"#828b93"}} onClick={handleSave} startIcon={<SaveIcon />} >
+          Save
+        </Button>
+      </Stack>
+    </Stack>
   );
 };
 
 export default PreferencesModal;
-
-{/* <FormControlLabel 
-control={<Checkbox onChange={(e) => {
-  if (e.target.checked) {
-    setSelectedSources([...selectedSources, source]);
-  } else {
-    setSelectedSources(selectedSources.filter((s) => s !== source));
-  }
-}} 
-checked={selectedSources.includes(source)} label={source} value={source} key={source} size="small" />} label={source} /> */}
