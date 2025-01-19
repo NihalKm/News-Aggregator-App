@@ -1,6 +1,6 @@
 import { newsApiClient, guardianApiClient} from './apiClient.ts';
 
-export const fetchAggregatedData = async (
+const fetchAggregatedData = async (
   searchTerm: string,
   sources: string,
   category: string,
@@ -9,9 +9,9 @@ export const fetchAggregatedData = async (
   const params: Record<string, string> = {};
   if (searchTerm) params.q = searchTerm ? searchTerm : "";
   if (sources) params.sources = sources;
-  if (category) params.category = category;
+  // if (category) params.category = category;
   if (authors) params.authors = authors;
-
+  
   // const response = await newsApiClient.get('/top-headlines', { params });
   const response: any = await new Promise((res,rej)=>{
     setTimeout(()=>{
@@ -281,8 +281,10 @@ export const fetchAggregatedData = async (
         }
         ]
         })
-    }, 2000)
+    }, 1000)
   })
   // const response = await guardianApiClient.get('/search', { params });
   return response.articles;
 };
+
+export { fetchAggregatedData };

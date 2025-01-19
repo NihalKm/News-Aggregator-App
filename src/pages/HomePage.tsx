@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
-import { colors, Divider, Drawer, Stack } from '@mui/material';
+import { Divider, Drawer, Stack } from '@mui/material';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { NewsCard, NewsCardSkeleton } from '../components/NewsCard.tsx';
@@ -28,12 +28,14 @@ interface DateSelectionType {
 
 const HomePage: React.FC = () => {
   const { searchTerm, setSearchTerm } = useSearch();
+  // State to manage filters
   const { source, setSource, category, setCategory } = useFilters();
+  // State to manage preferences
   const { sources, setSources, categories, setCategories, authors, setAuthors } = usePreferences();
   const [ dateDrawer, setDateDrawer ] = useState(false);
   const [ preferencesOpen, setPreferencesOpen ] = useState(false);
-  const [ sourceOptions, setSourceOptions ] = useState([]);
-  const [ categoryOptions, setCategoryOptions ] = useState([]);
+  // const [ sourceOptions, setSourceOptions ] = useState([]);
+  // const [ categoryOptions, setCategoryOptions ] = useState([]);
   const [ selectionRange, setSelectionRange ] = useState<DateSelectionType>({
     startDate: undefined,
     endDate: undefined,
@@ -131,24 +133,24 @@ const HomePage: React.FC = () => {
   }, [searchTerm, source, category]);
 
   // Filter data whenever filters change
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setIsLoading(true);
+  //     setError(null);
 
-      try {
-        console.log(articles)
-        const result = [];
-        setArticles(result);
-      } catch (err) {
-        setError('Failed to fetch data. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //     try {
+  //       console.log(articles)
+  //       const result = [];
+  //       setArticles(result);
+  //     } catch (err) {
+  //       setError('Failed to fetch data. Please try again later.');
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    fetchData();
-  }, [source, category]);
+  //   fetchData();
+  // }, [source, category]);
 
   const handleSelect = (ranges:{selection:DateSelectionType}) => {
     setSelectionRange({ ...ranges.selection });
@@ -158,9 +160,12 @@ const HomePage: React.FC = () => {
     <Box sx={{ flexGrow: 1 }}>
       <Drawer PaperProps={{sx:{borderRadius: "0px 0px 30px 30px"}}} anchor={"top"} open={preferencesOpen} onClose={()=>setPreferencesOpen(false)}>
         <PreferencesModal
-          sources={availableSources}
-          categories={availableCategories}
-          authors={availableAuthors}
+          availableSources={availableSources}
+          availableCategories={availableCategories}
+          availableAuthors={availableAuthors}
+          savedSources={sources}
+          savedCategories={categories}
+          savedAuthors={authors}
           onSave={handleSavePreferences}
         />
       </Drawer>
@@ -182,8 +187,8 @@ const HomePage: React.FC = () => {
               <IconButton onClick={()=>setDateDrawer(true)}>
                 <CalendarMonthIcon/>
               </IconButton>
-              <SourceFilter sources={sourceOptions} selectedSource={source} onSelectSource={setSource} />
-              <CategoryFilter categories={categoryOptions} selectedCategory={category} onSelectCategory={setCategory} />
+              <SourceFilter sources={availableSources} selectedSource={sources} onSelectSource={setSources} />
+              <CategoryFilter categories={availableCategories} selectedCategory={category} onSelectCategory={setCategory} />
             </Stack>
             <Stack flexDirection="row" sx={{justifyContent:{xs:"space-between", sm:"end"}, width:"100%"}}>
               <SearchBar searchTerm={searchTerm} onSearch={setSearchTerm} />
@@ -214,8 +219,8 @@ const HomePage: React.FC = () => {
       <Stack flexDirection="row" flexWrap={"wrap"} sx={{borderTop:"1px solid #7c6b6b", background:"linear-gradient(to right, #cdc6c6 0%, #9b9494 51%, #939393 72%)", rowGap:"8px", columnGap:"8px", padding:"16px"}}>
         {
           isLoading ? 
-          dummyItems.map((article,idx)=> <NewsCardSkeleton index={idx} />) :
-          articles.map((article,idx)=> <NewsCard index={idx} title={article.title} subtitle={article.description} imageUrl={article.urlToImage} author={article.author} />) 
+          dummyItems.map((article,idx)=> <NewsCardSkeleton key={idx} />) :
+          articles.map((article,idx)=> <NewsCard key={idx} url={article.url} title={article.title} subtitle={article.description} imageUrl={article.urlToImage} author={article.author} />) 
         }
       </Stack>
     </Box>

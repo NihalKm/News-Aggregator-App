@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const useFilters = () => {
   const [source, setSource] = useState('');
@@ -13,9 +13,10 @@ const useSearch = () => {
 };
 
 const usePreferences = () => {
-  const [sources, setSources] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [authors, setAuthors] = useState<string[]>([]);
+  const storedPreferences = localStorage.getItem("preferences") || "{}";
+  const [sources, setSources] = useState<string[]>(JSON.parse(storedPreferences).selectedSources || []);
+  const [categories, setCategories] = useState<string[]>(JSON.parse(storedPreferences).selectedCategories || []);
+  const [authors, setAuthors] = useState<string[]>(JSON.parse(storedPreferences).selectedAuthors || []);
 
   return {
     sources,

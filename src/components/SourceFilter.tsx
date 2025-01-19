@@ -1,25 +1,47 @@
 import React from 'react';
+import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, Select } from '@mui/material';
 
 interface SourceFilterProps {
   sources: string[];
-  selectedSource: string;
-  onSelectSource: (source: string) => void;
+  selectedSource: string[];
+  onSelectSource: (source: string[]) => void;
 }
 
 const SourceFilter: React.FC<SourceFilterProps> = ({ sources, selectedSource, onSelectSource }) => {
   return (
-    <select
-      value={selectedSource}
-      onChange={(e) => onSelectSource(e.target.value)}
-      style={{ margin: '10px', padding: '8px' }}
-    >
-      <option value="">All Sources</option>
-      {sources.map((source) => (
-        <option key={source} value={source}>
-          {source}
-        </option>
-      ))}
-    </select>
+    <FormControl sx={{ m: 1, minWidth: 200, maxWidth: 200 }} size="small">
+      {/* <InputLabel sx={{background:"white"}} id="demo-select-small-label">Source</InputLabel> */}
+      <Select
+        sx={{background:"white"}}
+        value={selectedSource}
+        // label="Source"
+        multiple
+        displayEmpty
+        renderValue={(selected) => selected.length === 0 ? "Select Source" : (selected as string[]).join(', ')}
+        onChange={(e) => {
+          var { target: { value }, } = e;
+          const isSelectAll = value.includes("Select All");
+          if (isSelectAll) {
+            if (value.length===sources.length+1) value = []; else value = sources;
+          } 
+          const newValue = typeof value === 'string' ? value.split(',') : value;
+          onSelectSource(newValue);
+        }}
+      >
+        <MenuItem value={"Select All"}>
+          <Checkbox checked={sources.length===selectedSource.length} />
+          <ListItemText primary={"Select All"} />
+        </MenuItem>
+        {
+          sources.map((source) => (
+            <MenuItem key={source} value={source}>
+              <Checkbox checked={selectedSource.includes(source)} />
+              <ListItemText primary={source} />
+            </MenuItem>
+          ))
+        }
+      </Select>
+    </FormControl>
   );
 };
 

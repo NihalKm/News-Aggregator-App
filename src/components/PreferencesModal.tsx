@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { Button, Checkbox, FormControlLabel, IconButton, Stack } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Button, Checkbox, FormControlLabel, Stack } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import '../App.css'
 
 interface PreferencesModalProps {
-  sources: string[];
-  categories: string[];
-  authors: string[];
+  availableSources: string[];
+  availableCategories: string[];
+  availableAuthors: string[];
+  savedSources: string[];
+  savedCategories: string[];
+  savedAuthors: string[];
   onSave: (selectedSources: string[], selectedCategories: string[], selectedAuthors: string[]) => void;
 }
 
@@ -15,19 +18,25 @@ const CheckBoxComponent: React.FC<{label:string, value:boolean, onChange:(e) => 
   return (
     <FormControlLabel key={label} label={label}
       control={<Checkbox  onChange={e => onChange(e)}
-      checked={value} label={label} value={label} size="small" />} 
+      checked={value} value={label} size="small" />} 
     />
   )
 }
 
-const PreferencesModal: React.FC<PreferencesModalProps> = ({ sources, categories, authors, onSave }) => {
-  const [selectedSources, setSelectedSources] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
+const PreferencesModal: React.FC<PreferencesModalProps> = ({ availableSources, availableCategories, availableAuthors, savedSources, savedCategories, savedAuthors, onSave }) => {
+  const [selectedSources, setSelectedSources] = useState<string[]>(savedSources);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(savedCategories);
+  const [selectedAuthors, setSelectedAuthors] = useState<string[]>(savedAuthors);
 
   const handleSave = () => {
     onSave(selectedSources, selectedCategories, selectedAuthors);
-  };
+    const preferences = {
+      selectedSources,
+      selectedCategories,
+      selectedAuthors,
+    };
+    localStorage.setItem("preferences", JSON.stringify(preferences));
+  }
 
   const handleChange = (event, currentList:string[], setFunction:(e)=>void, item:string ) => {
     if (event.target.checked) {
@@ -41,24 +50,36 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ sources, categories
     <Stack style={{ padding: '20px', borderBottom: '4px solid #3d3b3b', borderRadius: "30px" }}>
       <h2>Customize Your Feed</h2>
       {/* Sources */}
-      <h5>Sources</h5>
-      {sources.map((source) => (
-        <CheckBoxComponent label={source} value={selectedSources.includes(source)} onChange={(e)=>handleChange(e, selectedSources, setSelectedSources, source)} />
-      ))}
+      <h4 style={{margin:"8px 0px"}}>Sources</h4>
+      <Stack flexDirection={"row"} flexWrap={"wrap"}>
+        {
+          availableSources.map((source, idx) => (
+            <CheckBoxComponent key={idx} label={source} value={selectedSources.includes(source)} onChange={(e)=>handleChange(e, selectedSources, setSelectedSources, source)} />
+          ))
+        }
+      </Stack>
 
       {/* Categories */}
-      <h5>Categories</h5>
-      {categories.map((category) => (
-        <CheckBoxComponent label={category} value={selectedCategories.includes(category)} onChange={(e)=>handleChange(e, selectedCategories, setSelectedCategories, category)} />
-      ))}
+      <h4 style={{margin:"8px 0px"}}>Categories</h4>
+      <Stack flexDirection={"row"} flexWrap={"wrap"}>
+        {
+          availableCategories.map((category, idx) => (
+            <CheckBoxComponent key={idx} label={category} value={selectedCategories.includes(category)} onChange={(e)=>handleChange(e, selectedCategories, setSelectedCategories, category)} />
+          ))
+        }
+      </Stack>
 
       {/* Authors */}
-      <h5>Authors</h5>
-      {authors.map((author) => (
-        <CheckBoxComponent label={author} value={selectedAuthors.includes(author)} onChange={(e)=>handleChange(e, selectedAuthors, setSelectedAuthors, author)} />
-      ))}
-      <Stack sx={{width:"100%", alignItems:"center"}}>
-        <Button variant="contained" style={{width:{xs:"100%", sm:"50%"}, background:"#828b93"}} onClick={handleSave} startIcon={<SaveIcon />} >
+      <h4 style={{margin:"8px 0px"}}>Authors</h4>
+      <Stack flexDirection={"row"} flexWrap={"wrap"}>
+        {
+          availableAuthors.map((author, idx) => (
+            <CheckBoxComponent key={idx} label={author} value={selectedAuthors.includes(author)} onChange={(e) => handleChange(e, selectedAuthors, setSelectedAuthors, author)} />
+          ))
+        }
+      </Stack>
+      <Stack sx={{width:"100%", alignItems:"center", mt:2}}>
+        <Button variant="contained" sx={{width:{xs:"100%", sm:"50%"}, background:"#828b93"}} onClick={handleSave} startIcon={<SaveIcon />} >
           Save
         </Button>
       </Stack>

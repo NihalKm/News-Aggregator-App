@@ -1,3 +1,4 @@
+import { MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import React from 'react';
 
 interface CategoryFilterProps {
@@ -8,18 +9,24 @@ interface CategoryFilterProps {
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, selectedCategory, onSelectCategory }) => {
   return (
-    <select
-      value={selectedCategory}
-      onChange={(e) => onSelectCategory(e.target.value)}
-      style={{ margin: '10px', padding: '8px' }}
-    >
-      <option value="">All Categories</option>
-      {categories.map((category) => (
-        <option key={category} value={category}>
-          {category}
-        </option>
-      ))}
-    </select>
+    <FormControl sx={{ m: 1, minWidth: 200, maxWidth: 200 }} size="small">
+      <InputLabel id="demo-select-small-label">Category</InputLabel>
+      <Select 
+        sx={{background:"white"}}
+        value={selectedCategory}
+        label="Source"
+        onChange={(e) => onSelectCategory(e.target.value)}
+      >
+        <MenuItem value="">
+          <em>All Categories</em>
+        </MenuItem>
+        {
+          categories.map((category) => (
+            <MenuItem key={category} value={category}>{category}</MenuItem>
+          ))
+        }
+      </Select>
+    </FormControl>
   );
 };
 
