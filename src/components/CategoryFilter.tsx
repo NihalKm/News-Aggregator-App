@@ -1,4 +1,4 @@
-import { MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { MenuItem, Select, FormControl } from '@mui/material';
 import React from 'react';
 
 interface CategoryFilterProps {
@@ -7,14 +7,18 @@ interface CategoryFilterProps {
   onSelectCategory: (category: string) => void;
 }
 
+const capitalize = (s: string) => {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, selectedCategory, onSelectCategory }) => {
   return (
     <FormControl sx={{ m: 1, minWidth: 200, maxWidth: 200 }} size="small">
-      <InputLabel id="demo-select-small-label">Category</InputLabel>
       <Select 
         sx={{background:"white"}}
         value={selectedCategory}
-        label="Source"
+        displayEmpty
+        renderValue={(selected) => selectedCategory === "" ? "All Categories" : capitalize(selectedCategory)}
         onChange={(e) => onSelectCategory(e.target.value)}
       >
         <MenuItem value="">
@@ -22,7 +26,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, selectedCat
         </MenuItem>
         {
           categories.map((category) => (
-            <MenuItem key={category} value={category}>{category}</MenuItem>
+            <MenuItem sx={{textTransform:"capitalize"}} key={category} value={category}>{category}</MenuItem>
           ))
         }
       </Select>

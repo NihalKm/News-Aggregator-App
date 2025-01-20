@@ -4,9 +4,9 @@ import React from "react"
 interface NewsCardProps {
     title: string;
     subtitle: string;
-    imageUrl: string | null;
-    author: string | null;
-    url: string | null;
+    imageUrl: string | undefined;
+    author: string | undefined;
+    url: string | undefined;
 }
 
 const NewsCardSkeleton: React.FC = () => {

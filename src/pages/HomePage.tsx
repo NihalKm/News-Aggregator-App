@@ -3,8 +3,8 @@ import SearchBar from '../components/SearchBar.tsx';
 import SourceFilter from '../components/SourceFilter.tsx';
 import CategoryFilter from '../components/CategoryFilter.tsx';
 import PreferencesModal from '../components/PreferencesModal.tsx';
-import { useFilters, usePreferences, useSearch } from '../components/hooks.tsx';
-import { fetchAggregatedData } from '../api/fetchAggregatedData.ts';
+import { usePreferences } from '../components/hooks.tsx';
+import { fetchGuardianData, fetchNewsApiData, fetchNYTData } from '../api/fetchAggregatedData.ts';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -27,13 +27,35 @@ interface DateSelectionType {
 }
 
 const HomePage: React.FC = () => {
-  const { searchTerm, setSearchTerm } = useSearch();
-  // State to manage filters
-  const { source, setSource, category, setCategory } = useFilters();
+  const [source, setSource] = useState('');
+  const [category, setCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   // State to manage preferences
-  const { sources, setSources, categories, setCategories, authors, setAuthors } = usePreferences();
+  const availableSources = [
+    "New York Times",
+    "News API",
+    "The Guardian"
+  ];
+  const { sources, setSources, categories, setCategories, authors, setAuthors } = usePreferences(availableSources);
   const [ dateDrawer, setDateDrawer ] = useState(false);
   const [ preferencesOpen, setPreferencesOpen ] = useState(false);
+  const [ availableAuthors, setAvailableAuthors ] = useState([
+    "Karissa Bell",
+    "Bradley Hope",
+    "Kylie Mohr",
+    "Daniel Cooper",
+    "Mariella Moon",
+    "Jessica Conditt",
+    "Lawrence Bonk",
+    "Billy Steele",
+    "Kathy Willis",
+    "Brian Barrett",
+    "Matt Burgess",
+    "Eric Geller",
+    "Joseph Howlett",
+    "Pete Etchells",
+    "Chris Welch"
+  ]);
   // const [ sourceOptions, setSourceOptions ] = useState([]);
   // const [ categoryOptions, setCategoryOptions ] = useState([]);
   const [ selectionRange, setSelectionRange ] = useState<DateSelectionType>({
@@ -42,115 +64,93 @@ const HomePage: React.FC = () => {
     key: 'selection',
   });
 
-  const availableSources = ['Source1', 'Source2', 'Source3'];
-  const availableCategories = ['Category1', 'Category2', 'Category3'];
-  const availableAuthors = ['Author1', 'Author2', 'Author3'];
+  const availableCategories1 = [
+    "business", 
+    "entertainment", 
+    "general", 
+    "health", 
+    "science", 
+    "sports", 
+    "technology"
+  ];
 
   const handleSavePreferences = (selectedSources: string[], selectedCategories: string[], selectedAuthors: string[]) => {
     setSources(selectedSources);
     setCategories(selectedCategories);
     setAuthors(selectedAuthors);
     setPreferencesOpen(false);
+    fetchData();
   };
 
   const [articles, setArticles] = useState<any[]>([]);
+  const [articlesAfterFilter, setArticlesAfterFilter] = useState<any[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[] | any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const dummyItems = Array.from({ length: 12 }, (_, id) => id + 1);
-  const dummyItems1 = [
-    {
-        "source": {
-            "id": null,
-            "name": "Yahoo Entertainment"
-        },
-        "author": "Sarah Fielding",
-        "title": "Discovery+ is raising prices for all customers",
-        "description": "The price hikes for streaming services have already started for 2025. Discovery+ has announced its plans are increasing in price for all subscribers. The Discovery+ plan with ads will go up to $6 per month, from $5, while the ad-free plan will increase to $10…",
-        "url": "https://consent.yahoo.com/v2/collectConsent?sessionId=1_cc-session_52191b83-2526-4944-ac7c-9553076ae868",
-        "urlToImage": "https://media.wired.com/photos/67785b691a5b04cc90892d39/191:100/w_1280,c_limit/ai-hardware-ces-gear.jpg",
-        "publishedAt": "2025-01-07T16:06:47Z",
-        "content": "If you click 'Accept all', we and our partners, including 238 who are part of the IAB Transparency &amp; Consent Framework, will also store and/or access information on a device (in other words, use … [+678 chars]"
-    },
-    {
-        "source": {
-            "id": null,
-            "name": "[Removed]"
-        },
-        "author": null,
-        "title": "[Removed]",
-        "description": "[Removed]",
-        "url": "https://removed.com",
-        "urlToImage": "https://media.wired.com/photos/67785b691a5b04cc90892d39/191:100/w_1280,c_limit/ai-hardware-ces-gear.jpg",
-        "publishedAt": "2025-01-08T19:44:26Z",
-        "content": "[Removed]"
-    },
-    {
-        "source": {
-            "id": null,
-            "name": "[Removed]"
-        },
-        "author": null,
-        "title": "[Removed]",
-        "description": "[Removed]",
-        "url": "https://removed.com",
-        "urlToImage": "https://media.wired.com/photos/67785b691a5b04cc90892d39/191:100/w_1280,c_limit/ai-hardware-ces-gear.jpg",
-        "publishedAt": "2025-01-08T23:23:44Z",
-        "content": "[Removed]"
-    },
-    {
-        "source": {
-            "id": null,
-            "name": "[Removed]"
-        },
-        "author": null,
-        "title": "[Removed]",
-        "description": "[Removed]",
-        "url": "https://removed.com",
-        "urlToImage": "https://media.wired.com/photos/67785b691a5b04cc90892d39/191:100/w_1280,c_limit/ai-hardware-ces-gear.jpg",
-        "publishedAt": "2024-12-24T13:15:23Z",
-        "content": "[Removed]"
-    }
-  ]
 
-  // Fetch data whenever search term change
+  const fetchData = async () => {
+    setIsLoading(true);
+
+    try {
+      // Create a mapping of sources to their respective fetch functions
+      const sourceFetchers: Record<string, Function> = {
+        'News API': fetchNewsApiData,
+        'The Guardian': fetchGuardianData,
+        'New York Times': fetchNYTData,
+      };
+
+      // Push relevant promises into the array based on the selected sources
+      const promises = Object.keys(sourceFetchers)
+        .map((source) => sourceFetchers[source](searchTerm)); // Map to fetch functions
+
+      // Wait for all promises to resolve and combine the results
+      const combinedResults = (await Promise.all(promises)).flat();
+      const uniqueCategories = new Set();
+      const uniqueAuthors = new Set();
+      combinedResults.forEach((x) => {
+        uniqueCategories.add(x.category);
+        uniqueAuthors.add(x.author);
+      });
+      const uniqueCategoriesArray = [...uniqueCategories];
+      const uniqueAuthorsArray = [...uniqueAuthors];
+      setAvailableCategories(uniqueCategoriesArray);
+
+      setArticles(combinedResults);
+      setArticlesAfterFilter(combinedResults);
+    } catch (err) {
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [searchTerm]);   
+
+  // Filter data whenever filters change
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      setError(null);
 
       try {
-        const result = await fetchAggregatedData(searchTerm, sources.join(','), categories.join(','), authors.join(','));
-        setArticles(result);
+        console.log(category,sources,articles)
+        var result = [];
+        // Filter based on sources and categories
+        articles.forEach((article) => {
+          if (sources.includes(article.sourceName) && (category === '' || category === article.category)) {
+            result.push(article);
+          }
+        });
+        setArticlesAfterFilter(result);
       } catch (err) {
-        setError('Failed to fetch data. Please try again later.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [searchTerm, source, category]);
-
-  // Filter data whenever filters change
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setIsLoading(true);
-  //     setError(null);
-
-  //     try {
-  //       console.log(articles)
-  //       const result = [];
-  //       setArticles(result);
-  //     } catch (err) {
-  //       setError('Failed to fetch data. Please try again later.');
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [source, category]);
+  }, [category, sources]);
 
   const handleSelect = (ranges:{selection:DateSelectionType}) => {
     setSelectionRange({ ...ranges.selection });
@@ -161,7 +161,7 @@ const HomePage: React.FC = () => {
       <Drawer PaperProps={{sx:{borderRadius: "0px 0px 30px 30px"}}} anchor={"top"} open={preferencesOpen} onClose={()=>setPreferencesOpen(false)}>
         <PreferencesModal
           availableSources={availableSources}
-          availableCategories={availableCategories}
+          availableCategories={availableCategories1}
           availableAuthors={availableAuthors}
           savedSources={sources}
           savedCategories={categories}
@@ -220,7 +220,7 @@ const HomePage: React.FC = () => {
         {
           isLoading ? 
           dummyItems.map((article,idx)=> <NewsCardSkeleton key={idx} />) :
-          articles.map((article,idx)=> <NewsCard key={idx} url={article.url} title={article.title} subtitle={article.description} imageUrl={article.urlToImage} author={article.author} />) 
+          articlesAfterFilter.map((article,idx)=> <NewsCard key={idx} url={article.url} title={article.title} subtitle={article.description} imageUrl={article.urlToImage} author={article.author} />) 
         }
       </Stack>
     </Box>

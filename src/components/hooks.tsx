@@ -1,22 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-const useFilters = () => {
-  const [source, setSource] = useState('');
-  const [category, setCategory] = useState('');
-
-  return { source, setSource, category, setCategory };
-};
-
-const useSearch = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  return { searchTerm, setSearchTerm };
-};
-
-const usePreferences = () => {
+const usePreferences = (availableSources:string[]) => {
   const storedPreferences = localStorage.getItem("preferences") || "{}";
-  const [sources, setSources] = useState<string[]>(JSON.parse(storedPreferences).selectedSources || []);
-  const [categories, setCategories] = useState<string[]>(JSON.parse(storedPreferences).selectedCategories || []);
-  const [authors, setAuthors] = useState<string[]>(JSON.parse(storedPreferences).selectedAuthors || []);
+  const parsedPreferences = JSON.parse(storedPreferences);
+  //To set default sources if no preferences are stored
+  const [sources, setSources] = useState<string[]>(parsedPreferences.selectedSources ? parsedPreferences.selectedSources : availableSources);
+  const [categories, setCategories] = useState<string[]>(parsedPreferences.selectedCategories || []);
+  const [authors, setAuthors] = useState<string[]>(parsedPreferences.selectedAuthors || []);
 
   return {
     sources,
@@ -28,4 +18,4 @@ const usePreferences = () => {
   };
 };
 
-export { useFilters, useSearch, usePreferences }; 
+export { usePreferences }; 

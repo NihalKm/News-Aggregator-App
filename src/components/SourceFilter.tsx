@@ -1,5 +1,5 @@
 import React from 'react';
-import { Checkbox, FormControl, InputLabel, ListItemText, MenuItem, Select } from '@mui/material';
+import { Checkbox, FormControl, ListItemText, MenuItem, Select } from '@mui/material';
 
 interface SourceFilterProps {
   sources: string[];
@@ -10,14 +10,12 @@ interface SourceFilterProps {
 const SourceFilter: React.FC<SourceFilterProps> = ({ sources, selectedSource, onSelectSource }) => {
   return (
     <FormControl sx={{ m: 1, minWidth: 200, maxWidth: 200 }} size="small">
-      {/* <InputLabel sx={{background:"white"}} id="demo-select-small-label">Source</InputLabel> */}
       <Select
         sx={{background:"white"}}
         value={selectedSource}
-        // label="Source"
         multiple
         displayEmpty
-        renderValue={(selected) => selected.length === 0 ? "Select Source" : (selected as string[]).join(', ')}
+        renderValue={(selected) => selected.length === 0 ? "Select Source" : selected.length===sources.length ? "All Sources" : (selected as string[]).join(', ')}
         onChange={(e) => {
           var { target: { value }, } = e;
           const isSelectAll = value.includes("Select All");

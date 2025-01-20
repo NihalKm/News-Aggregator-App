@@ -61,7 +61,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ availableSources, a
 
       {/* Categories */}
       <h4 style={{margin:"8px 0px"}}>Categories</h4>
-      <Stack flexDirection={"row"} flexWrap={"wrap"}>
+      <Stack flexDirection={"row"} flexWrap={"wrap"} textTransform={"capitalize"}>
         {
           availableCategories.map((category, idx) => (
             <CheckBoxComponent key={idx} label={category} value={selectedCategories.includes(category)} onChange={(e)=>handleChange(e, selectedCategories, setSelectedCategories, category)} />
