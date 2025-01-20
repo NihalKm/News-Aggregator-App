@@ -8,7 +8,7 @@ interface CategoryFilterProps {
 }
 
 const capitalize = (s: string) => {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return s?.charAt(0).toUpperCase() + s?.slice(1);
 }
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, selectedCategory, onSelectCategory }) => {

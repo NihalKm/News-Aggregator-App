@@ -27,7 +27,6 @@ interface DateSelectionType {
 }
 
 const HomePage: React.FC = () => {
-  const [source, setSource] = useState('');
   const [category, setCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   // State to manage preferences
@@ -37,6 +36,7 @@ const HomePage: React.FC = () => {
     "The Guardian"
   ];
   const { sources, setSources, categories, setCategories, authors, setAuthors } = usePreferences(availableSources);
+  const [source, setSource] = useState(sources);
   const [ dateDrawer, setDateDrawer ] = useState(false);
   const [ preferencesOpen, setPreferencesOpen ] = useState(false);
   const [ availableAuthors, setAvailableAuthors ] = useState([
@@ -56,15 +56,14 @@ const HomePage: React.FC = () => {
     "Pete Etchells",
     "Chris Welch"
   ]);
-  // const [ sourceOptions, setSourceOptions ] = useState([]);
-  // const [ categoryOptions, setCategoryOptions ] = useState([]);
+
   const [ selectionRange, setSelectionRange ] = useState<DateSelectionType>({
     startDate: undefined,
     endDate: undefined,
     key: 'selection',
   });
 
-  const availableCategories1 = [
+  const preferenceCategories = [
     "business", 
     "entertainment", 
     "general", 
@@ -76,21 +75,22 @@ const HomePage: React.FC = () => {
 
   const handleSavePreferences = (selectedSources: string[], selectedCategories: string[], selectedAuthors: string[]) => {
     setSources(selectedSources);
+    setSource(selectedSources);
     setCategories(selectedCategories);
     setAuthors(selectedAuthors);
     setPreferencesOpen(false);
-    fetchData();
+    fetchData(selectedSources);
   };
 
   const [articles, setArticles] = useState<any[]>([]);
   const [articlesAfterFilter, setArticlesAfterFilter] = useState<any[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[] | any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const dummyItems = Array.from({ length: 12 }, (_, id) => id + 1);
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  const fetchData = async (selSource:string[]) => {
+    setIsLoaded(false);
 
     try {
       // Create a mapping of sources to their respective fetch functions
@@ -106,21 +106,33 @@ const HomePage: React.FC = () => {
 
       // Wait for all promises to resolve and combine the results
       const combinedResults = (await Promise.all(promises)).flat();
+      var result:any[] = [];
       const uniqueCategories = new Set();
-      const uniqueAuthors = new Set();
-      combinedResults.forEach((x) => {
-        uniqueCategories.add(x.category);
-        uniqueAuthors.add(x.author);
+      // Filter based on sources and categories
+      combinedResults.forEach((article) => {
+        // If the data comes from the selected source
+        if ((selSource?selSource:source).includes(article.sourceName))
+          // If the category is the same as the selected category or no category
+          if((category) === '' || (category) === article.category) {
+            result.push(article);
+          }
+        uniqueCategories.add(article.category);
       });
-      const uniqueCategoriesArray = [...uniqueCategories];
-      const uniqueAuthorsArray = [...uniqueAuthors];
-      setAvailableCategories(uniqueCategoriesArray);
-
       setArticles(combinedResults);
-      setArticlesAfterFilter(combinedResults);
+      setArticlesAfterFilter(result);
+      const uniqueCategoriesArray = [...uniqueCategories];
+      setAvailableCategories(uniqueCategoriesArray);
+      // To reset category filter
+      setCategory('');
+      // To reset date filter
+      setSelectionRange({
+        startDate: undefined,
+        endDate: undefined,
+        key: 'selection',
+      })
     } catch (err) {
     } finally {
-      setIsLoading(false);
+      setIsLoaded(true);
     }
   };
 
@@ -130,38 +142,42 @@ const HomePage: React.FC = () => {
 
   // Filter data whenever filters change
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-
-      try {
-        console.log(category,sources,articles)
-        var result = [];
-        // Filter based on sources and categories
-        articles.forEach((article) => {
-          if (sources.includes(article.sourceName) && (category === '' || category === article.category)) {
-            result.push(article);
+    try {
+      console.log(category,sources,articles,selectionRange)
+      var result:any[] = [];
+      // Filter based on sources and categories
+      articles.forEach((article) => {
+        if (source.includes(article.sourceName)){
+          if (selectionRange.startDate && selectionRange.endDate) {
+            const articleDate = new Date(article.date);
+            if (articleDate >= selectionRange.startDate && articleDate <= selectionRange.endDate) {
+              if (category === '' || category === article.category) {
+                result.push(article);
+              }
+            }
+          } else{
+            if (category === '' || category === article.category) {
+              result.push(article);
+            }
           }
-        });
-        setArticlesAfterFilter(result);
-      } catch (err) {
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [category, sources]);
+        }
+      });
+      setArticlesAfterFilter(result);
+    } catch (err) {
+    } finally {
+    }
+  }, [category, source, selectionRange]);
 
   const handleSelect = (ranges:{selection:DateSelectionType}) => {
     setSelectionRange({ ...ranges.selection });
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1, height: "100vh" }}>
       <Drawer PaperProps={{sx:{borderRadius: "0px 0px 30px 30px"}}} anchor={"top"} open={preferencesOpen} onClose={()=>setPreferencesOpen(false)}>
         <PreferencesModal
           availableSources={availableSources}
-          availableCategories={availableCategories1}
+          availableCategories={preferenceCategories}
           availableAuthors={availableAuthors}
           savedSources={sources}
           savedCategories={categories}
@@ -187,7 +203,7 @@ const HomePage: React.FC = () => {
               <IconButton onClick={()=>setDateDrawer(true)}>
                 <CalendarMonthIcon/>
               </IconButton>
-              <SourceFilter sources={availableSources} selectedSource={sources} onSelectSource={setSources} />
+              <SourceFilter sources={availableSources} selectedSource={source} onSelectSource={setSource} />
               <CategoryFilter categories={availableCategories} selectedCategory={category} onSelectCategory={setCategory} />
             </Stack>
             <Stack flexDirection="row" sx={{justifyContent:{xs:"space-between", sm:"end"}, width:"100%"}}>
@@ -196,7 +212,6 @@ const HomePage: React.FC = () => {
             </Stack>
           </Stack>
           <Drawer
-            // sx={{maxWidth:{xs:"400px"}}}
             anchor={"right"}
             open={dateDrawer}
             onClose={()=>setDateDrawer(false)}
@@ -216,11 +231,14 @@ const HomePage: React.FC = () => {
           </Drawer>
         </Toolbar>
       </AppBar>
-      <Stack flexDirection="row" flexWrap={"wrap"} sx={{borderTop:"1px solid #7c6b6b", background:"linear-gradient(to right, #cdc6c6 0%, #9b9494 51%, #939393 72%)", rowGap:"8px", columnGap:"8px", padding:"16px"}}>
+      <Stack justifyContent={articlesAfterFilter.length === 0 ? "center" : "initial"} flexDirection="row" flexWrap={"wrap"} sx={{height:"100%", borderTop:"1px solid #7c6b6b", background:"linear-gradient(to right, #cdc6c6 0%, #9b9494 51%, #939393 72%)", rowGap:"8px", columnGap:"8px", padding:"16px"}}>
         {
-          isLoading ? 
+          !isLoaded ? 
           dummyItems.map((article,idx)=> <NewsCardSkeleton key={idx} />) :
-          articlesAfterFilter.map((article,idx)=> <NewsCard key={idx} url={article.url} title={article.title} subtitle={article.description} imageUrl={article.urlToImage} author={article.author} />) 
+          (
+            articlesAfterFilter.length === 0 ? <Typography variant="h6" sx={{color:"#1f1f29ab"}}>No Articles Found</Typography> :
+            articlesAfterFilter.map((article,idx)=> <NewsCard key={idx} url={article.url} title={article.title} subtitle={article.description} imageUrl={article.urlToImage} author={article.author} />) 
+          )
         }
       </Stack>
     </Box>
