@@ -64,7 +64,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ availableSources, a
       <Stack flexDirection={"row"} flexWrap={"wrap"} textTransform={"capitalize"}>
         {
           availableCategories.map((category, idx) => (
-            <CheckBoxComponent key={idx} label={category==="" ? "All" : category} value={category===selectedCategory} onChange={(e)=>setSelectedCategory(e.target.value)} />
+            <CheckBoxComponent key={idx} label={category==="" ? "All" : category} value={category===selectedCategory} onChange={(e)=>setSelectedCategory(e.target.value==="All"?"":e.target.value)} />
           ))
         }
       </Stack>
