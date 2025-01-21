@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Checkbox, FormControlLabel, Stack } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import '../App.css'
@@ -8,9 +8,9 @@ interface PreferencesModalProps {
   availableCategories: string[];
   availableAuthors: string[];
   savedSources: string[];
-  savedCategories: string[];
+  savedCategory: string;
   savedAuthors: string[];
-  onSave: (selectedSources: string[], selectedCategories: string[], selectedAuthors: string[]) => void;
+  onSave: (selectedSources: string[], selectedCategory: string, selectedAuthors: string[]) => void;
 }
 
 const CheckBoxComponent: React.FC<{label:string, value:boolean, onChange:(e) => void}> = (props) => {
@@ -23,16 +23,16 @@ const CheckBoxComponent: React.FC<{label:string, value:boolean, onChange:(e) => 
   )
 }
 
-const PreferencesModal: React.FC<PreferencesModalProps> = ({ availableSources, availableCategories, availableAuthors, savedSources, savedCategories, savedAuthors, onSave }) => {
+const PreferencesModal: React.FC<PreferencesModalProps> = ({ availableSources, availableCategories, availableAuthors, savedSources, savedCategory, savedAuthors, onSave }) => {
   const [selectedSources, setSelectedSources] = useState<string[]>(savedSources);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(savedCategories);
+  const [selectedCategory, setSelectedCategory] = useState<string>(savedCategory);
   const [selectedAuthors, setSelectedAuthors] = useState<string[]>(savedAuthors);
 
   const handleSave = () => {
-    onSave(selectedSources, selectedCategories, selectedAuthors);
+    onSave(selectedSources, selectedCategory, selectedAuthors);
     const preferences = {
       selectedSources,
-      selectedCategories,
+      selectedCategory,
       selectedAuthors,
     };
     localStorage.setItem("preferences", JSON.stringify(preferences));
@@ -64,7 +64,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({ availableSources, a
       <Stack flexDirection={"row"} flexWrap={"wrap"} textTransform={"capitalize"}>
         {
           availableCategories.map((category, idx) => (
-            <CheckBoxComponent key={idx} label={category} value={selectedCategories.includes(category)} onChange={(e)=>handleChange(e, selectedCategories, setSelectedCategories, category)} />
+            <CheckBoxComponent key={idx} label={category==="" ? "All" : category} value={category===selectedCategory} onChange={(e)=>setSelectedCategory(e.target.value)} />
           ))
         }
       </Stack>

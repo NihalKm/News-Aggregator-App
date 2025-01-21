@@ -5,14 +5,14 @@ const usePreferences = (availableSources:string[]) => {
   const parsedPreferences = JSON.parse(storedPreferences);
   //To set default sources if no preferences are stored
   const [sources, setSources] = useState<string[]>(parsedPreferences.selectedSources ? parsedPreferences.selectedSources : availableSources);
-  const [categories, setCategories] = useState<string[]>(parsedPreferences.selectedCategories || []);
+  const [category, setCategory] = useState<string>(parsedPreferences.selectedCategory || "");
   const [authors, setAuthors] = useState<string[]>(parsedPreferences.selectedAuthors || []);
 
   return {
     sources,
     setSources,
-    categories,
-    setCategories,
+    category,
+    setCategory,
     authors,
     setAuthors,
   };
