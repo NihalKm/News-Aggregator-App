@@ -13,7 +13,7 @@ const capitalize = (s: string) => {
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, selectedCategory, onSelectCategory }) => {
   return (
-    <FormControl sx={{ m: 1, minWidth: 200, maxWidth: 200 }} size="small">
+    <FormControl sx={{ m: 1, minWidth: {xs:150, lg:200}, maxWidth: {xs:150, lg:200} }} size="small">
       <Select 
         sx={{background:"white"}}
         value={selectedCategory}
